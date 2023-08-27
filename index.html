@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="card">
+        <div class="search">
+            <input type="text" placeholder="Enter City Name" spellcheck="false">
+            <button><img src="C:/Users/karan/OneDrive/Pictures/Weather App/search.png"></button>
+        </div>
+        <div class="error">
+            <p>Invalid City Name</p>
+        </div>
+        <div class="weather">
+            <img src="" class="weather-icon">
+            <h1 class="temp">22°C</h1>
+            <h2 class="city">New York</h2>
+            <div class="details">
+                <div class="col">
+                    <img src="C:/Users/karan/OneDrive/Pictures/Weather App/humidity.png">
+                    <div>
+                        <p class="humidity">50%</p>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="C:/Users/karan/OneDrive/Pictures/Weather App/wind.png">
+                    <div>
+                        <p class="wind">15 km/h</p>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="forecast">
+            <!-- Forecast data will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "79b937b246a191044901c6a025a0131a";
+        const apiUrl = "https://api.openweathermap.org/data/2.5/forecast?units=metric&q=";
+
+        const searchBox = document.querySelector(".search input");
+        const searchBtn = document.querySelector(".search button");
+        const weatherIcon = document.querySelector(".weather-icon");
+
+        async function checkWeather(city) {
+            const response = await fetch(apiUrl + city + `&appid=${apiKey}`);
+
+            if (response.status == 404) {
+                document.querySelector(".error").style.display = "block";
+                document.querySelector(".weather").style.display = "none";
+                document.querySelector(".forecast").style.display = "none";
+            } else {
+                const data = await response.json();
+
+                document.querySelector(".city").innerHTML = data.city.name;
+                document.querySelector(".temp").innerHTML = Math.round(data.list[0].main.temp) + "°C";
+                document.querySelector(".humidity").innerHTML = data.list[0].main.humidity + "%";
+                document.querySelector(".wind").innerHTML = data.list[0].wind.speed + " km/h";
+                weatherIcon.src = getWeatherIconUrl(data.list[0].weather[0].main);
+
+                displayForecast(data.list);
+                
+                document.querySelector(".weather").style.display = "block";
+                document.querySelector(".error").style.display = "none";
+            }
+        }
+
+        function displayForecast(forecastList) {
+            const forecastContainer = document.querySelector(".forecast");
+            forecastContainer.innerHTML = "";
+
+            for (let i = 0; i < forecastList.length; i += 8) {
+                const forecast = forecastList[i];
+                const forecastDate = new Date(forecast.dt * 1000);
+                const forecastDay = forecastDate.toLocaleDateString("en-US", { weekday: "long" });
+                const forecastTemperature = Math.round(forecast.main.temp) + "°C";
+                const forecastIcon = getWeatherIconUrl(forecast.weather[0].main);
+
+                const forecastElement = document.createElement("div");
+                forecastElement.classList.add("forecast-item");
+                forecastElement.innerHTML = `
+                    <p class="forecast-day">${forecastDay}</p>
+                    <img src="${forecastIcon}" class="forecast-icon">
+                    <p class="forecast-temp">${forecastTemperature}</p>
+                `;
+
+                forecastContainer.appendChild(forecastElement);
+            }
+            
+            forecastContainer.style.display = "block";
+        }
+
+        function getWeatherIconUrl(condition) {
+            let iconUrl = "";
+
+            if (condition === "Clear") {
+                iconUrl = "C:/Users/karan/OneDrive/Pictures/Weather App/clear.png";
+            } else if (condition === "Clouds") {
+                iconUrl = "C:/Users/karan/OneDrive/Pictures/Weather App/clouds.png";
+            } else if (condition === "Rain") {
+                iconUrl = "C:/Users/karan/OneDrive/Pictures/Weather App/rain.png";
+            } else if(condition === "Drizzle"){
+                iconUrl = "C:/Users/karan/OneDrive/Pictures/Weather App/drizzle.png";
+            } else if(condition === "Mist"){
+                iconUrl = "C:/Users/karan/OneDrive/Pictures/Weather App/mist.png";
+            }   
+
+            return iconUrl;
+        }
+
+        searchBtn.addEventListener("click", () => {
+            checkWeather(searchBox.value);
+        });
+    </script>
+</body>
+</html>
